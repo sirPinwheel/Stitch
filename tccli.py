@@ -27,6 +27,14 @@ usage:
     python3 tccli.py [option 1] <arg 1> [option 2] <arg 2>...
     ./tccli.py [option 1] <arg 1> [option 2] <arg 2>...
 
+    If "--config <file>" is not provided the script will look for configuration
+    file in this order in following locations:
+
+    UNIX:                       WINDOWS:
+    1) ~/.config/tccli/config   1) Not yet supported
+    2) ~/.tcclirc               2) Not yet supported
+
+    Those will also be overridden by arguments passed while launching the script
     To quit chat simply type in !exit or !quit
 
 options:
@@ -211,6 +219,8 @@ def parse_cfg(filename):
     f.close()
 
     for line in content:
+        if line[0] == '#': continue
+        if line == os.linesep: continue
         line = line.strip(' \n\r')
         line = line.split('=')
         if line[0] == 'name': _name = line[1]
@@ -242,6 +252,15 @@ def get_config():
     if '--config' in _cli_var:
         ind = _cli_var.index('--config')
         _config = _cli_var[ind + 1]
+    else:
+        if os.name == 'posix':
+            _usr_dir = os.path.expanduser("~")
+            if os.path.exists(_usr_dir + '/.config/tccli/config'):
+                _config = _usr_dir + '/.config/tccli/config'
+            elif os.path.exists(_usr_dir + '/.tcclirc'):
+                _config = _usr_dir + '/.tcclirc'
+        elif os.name == 'nt':
+            pass #TODO
 
     if '--spectate' in _cli_var:
         ind = _cli_var.index('--spectate')

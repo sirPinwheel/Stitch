@@ -28,7 +28,7 @@ tccli is a simple Python script that will connect to any Twitch channel, the ide
 
 ## Usage
 Now you can launch the script, it's supposed to be run from the command line (duh).<br>
-Run it with ``-h`` argument to get more info about the usage
+Run it with ``-h`` for the following help message:<br>
 
 ```
 tccli.py needs username, name of the channel and oauth token of that user
@@ -40,6 +40,14 @@ usage:
     python3 tccli.py [option 1] <arg 1> [option 2] <arg 2>...
     ./tccli.py [option 1] <arg 1> [option 2] <arg 2>...
 
+    If "--config <file>" is not provided the script will look for configuration
+    file in this order in following locations:
+
+    UNIX:                       WINDOWS:
+    1) ~/.config/tccli/config   1) Not yet supported
+    2) ~/.tcclirc               2) Not yet supported
+
+    Those will also be overridden by arguments passed while launching the script
     To quit chat simply type in !exit or !quit
 
 options:
