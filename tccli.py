@@ -260,7 +260,10 @@ def get_config():
 
     if '-c' in _cli_var:
         ind = _cli_var.index('-c')
-        _channel = _cli_var[ind + 1]
+        arg = _cli_var[ind + 1]
+        if arg[0] == '#':
+            _channel = arg
+        else: _channel = '#' + arg
 
     if '-o' in _cli_var:
         ind = _cli_var.index('-o')
