@@ -44,8 +44,8 @@ usage:
     file in this order in following locations:
 
     UNIX:                       WINDOWS:
-    1) ~/.config/tccli/config   1) Not yet supported
-    2) ~/.tcclirc               2) Not yet supported
+    1) ~/.config/tccli/config   1) ./config.ini ("." meaning the folder containing tccli.py)
+    2) ~/.tcclirc
 
     Those will also be overridden by arguments passed while launching the script
     To quit chat simply type in !exit or !quit

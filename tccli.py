@@ -31,8 +31,8 @@ usage:
     file in this order in following locations:
 
     UNIX:                       WINDOWS:
-    1) ~/.config/tccli/config   1) Not yet supported
-    2) ~/.tcclirc               2) Not yet supported
+    1) ~/.config/tccli/config   1) ./config.ini ("." meaning the folder containing tccli.py)
+    2) ~/.tcclirc
 
     Those will also be overridden by arguments passed while launching the script
     To quit chat simply type in !exit or !quit
@@ -168,7 +168,8 @@ class IrcClient():
         while self._connection is not None:
             message_end = buffer.find('\r\n')
             if message_end == -1:
-                buffer += self._connection.recv(1024).decode('utf-8')
+                try: buffer += self._connection.recv(1024).decode('utf-8')
+                except OSError: return
             else:
                 message = buffer[:message_end]
                 buffer = buffer[message_end + 2:]
@@ -260,7 +261,7 @@ def get_config():
             elif os.path.exists(_usr_dir + '/.tcclirc'):
                 _config = _usr_dir + '/.tcclirc'
         elif os.name == 'nt':
-            pass #TODO
+            _config = os.getcwd() + '\\config.ini'
 
     if '--spectate' in _cli_var:
         ind = _cli_var.index('--spectate')
