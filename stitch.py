@@ -6,8 +6,12 @@ import socket
 import ssl
 import sys
 import os.path
+
 try: import certifi
 except ImportError: sys.exit('[ERROR] "certifi" module is required')
+
+try: import curses
+except ImportError: sys.exit('[ERROR] "curses" module is required')
 
 HOST = 'irc.twitch.tv' # default Twitch hostname
 PORT = 6697 # default Twitch port with SSL support
@@ -16,23 +20,24 @@ OAUTH = ''
 CHANNEL = ''
 INPUT_ENABLE = True
 TIMESTAMPS_ENABLE = False
+CURSES_ENABLE = False
 
 def display_help():
-    print("""tccli.py needs username, name of the channel and oauth token of that user
+    print("""stitch.py needs username, name of the channel and oauth token of that user
 You can mix and match what's in the configuration file and what's
 passed as the argument to the program, arguments will override data
 from the configuration file.
 
 usage:
-    python3 tccli.py [option 1] <arg 1> [option 2] <arg 2>...
-    ./tccli.py [option 1] <arg 1> [option 2] <arg 2>...
+    python3 stitch.py [option 1] <arg 1> [option 2] <arg 2>...
+    ./stitch.py [option 1] <arg 1> [option 2] <arg 2>...
 
     If "--config <file>" is not provided the script will look for configuration
     file in this order in following locations:
 
     UNIX:                       WINDOWS:
-    1) ~/.config/tccli/config   1) ./config.ini ("." meaning the folder containing tccli.py)
-    2) ~/.tcclirc
+    1) ~/.config/stitch/config   1) ./config.ini ("." meaning the folder containing stitch.py)
+    2) ~/.stitchrc
 
     Those will also be overridden by arguments passed while launching the script
     To quit chat simply type in !exit or !quit
@@ -46,10 +51,10 @@ options:
     --timestamps     use [h:m:s] timestamps
 
 examples:
-    python3 tccli.py -n 'my_bot_account' -c 'my_epic_channel' -o 'oauth:abcdefghijkl...'
-    python3 tccli.py --config './conf.cfg'
-    python3 tccli.py --config './conf.cfg' -c 'my_epic_channel'
-    python3 tccli.py --config './conf.cfg' --spectate
+    python3 stitch.py -n 'my_bot_account' -c 'my_epic_channel' -o 'oauth:abcdefghijkl...'
+    python3 stitch.py --config './conf.cfg'
+    python3 stitch.py --config './conf.cfg' -c 'my_epic_channel'
+    python3 stitch.py --config './conf.cfg' --spectate
 
 configuration file format:
     name=name_of_user
@@ -239,6 +244,7 @@ def get_config():
     global OAUTH
     global INPUT_ENABLE
     global TIMESTAMPS_ENABLE
+    global CURSES_ENABLE
 
     _cli_var = sys.argv[1:]
     _name = ''
@@ -256,19 +262,17 @@ def get_config():
     else:
         if os.name == 'posix':
             _usr_dir = os.path.expanduser("~")
-            if os.path.exists(_usr_dir + '/.config/tccli/config'):
-                _config = _usr_dir + '/.config/tccli/config'
-            elif os.path.exists(_usr_dir + '/.tcclirc'):
-                _config = _usr_dir + '/.tcclirc'
+            if os.path.exists(_usr_dir + '/.config/stitch/config'):
+                _config = _usr_dir + '/.config/stitch/config'
+            elif os.path.exists(_usr_dir + '/.stitchrc'):
+                _config = _usr_dir + '/.stitchrc'
         elif os.name == 'nt':
             _config = os.getcwd() + '\\config.ini'
 
     if '--spectate' in _cli_var:
-        ind = _cli_var.index('--spectate')
         INPUT_ENABLE = False
 
     if '--timestamps' in _cli_var:
-        ind = _cli_var.index('--timestamps')
         TIMESTAMPS_ENABLE = True
 
     if _config != '':
@@ -288,6 +292,9 @@ def get_config():
     if '-o' in _cli_var:
         ind = _cli_var.index('-o')
         _oauth = _cli_var[ind + 1]
+
+    if '--curses' in _cli_var:
+        CURSES_ENABLE = True
 
     if _name == '' or _channel == '' or _oauth == '':
         sys.exit('[ERROR] Wrong configuration data (-h or --help for help)')
@@ -334,26 +341,59 @@ def display_message(msg_str):
         print('[{}] {}'.format(datetime.now().strftime('%H:%M:%S'), message))
     else: print(message)
 
+def display_message_curses(screen, msg_str):
+    """
+    Handler for outputting messages when in curses mode
+    """
+    global TIMESTAMPS_ENABLE
+    message = get_usr(msg_str) + ": " + get_msg(msg_str)
+
+    if TIMESTAMPS_ENABLE:
+        message = '[{}] {}'.format(datetime.now().strftime('%H:%M:%S'), message)
+
+    pass
 
 def main():
     get_config()
     _running = True
     _connection = None
 
-    if check_config(HOST, PORT, NAME, OAUTH, CHANNEL):
-        _connection = IrcClient()
-        _connection.add_handler(display_message)
-        _connection.connect(HOST, PORT, NAME, OAUTH, CHANNEL)
-    else:
+    if not check_config(HOST, PORT, NAME, OAUTH, CHANNEL):
         sys.exit('[ERROR] Wrong format of configuration data (-h or --help for help)')
 
-    while _running:
-        command: str = input()
-        if command == '!quit' or command == '!exit':
-            _connection.disconnect()
-            _running = False
-        else:
-            if INPUT_ENABLE: _connection.send_message(command)
+    _connection = IrcClient()
+
+    if not CURSES_ENABLE:
+        _connection.add_handler(display_message)
+        _connection.connect(HOST, PORT, NAME, OAUTH, CHANNEL)
+
+        while _running:
+            command: str = input()
+            if command == '!quit' or command == '!exit':
+                _connection.disconnect()
+                _running = False
+            else:
+                if INPUT_ENABLE: _connection.send_message(command)
+    else:
+        _connection.add_handler(display_message_curses)
+        _connection.connect(HOST, PORT, NAME, OAUTH, CHANNEL)
+
+        _screen = curses.initscr()
+        curses.noecho()
+        curses.cbreak()
+        curses.curs_set(0)
+        _screen.keypad(True)
+        if curses.has_colors(): curses.start_color()
+        curses.init_pair(0, curses.COLOR_WHITE, curses.COLOR_BLACK)
+        max_y, max_x = _screen.getmaxyx()
+        input_buffer = ""
+
+        while _running:
+            break
+
+        curses.echo()
+        curses.nocbreak()
+        curses.curs_set(1)
 
 if __name__ == "__main__":
     main()
