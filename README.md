@@ -1,13 +1,18 @@
-# tccli
-Twitch Chat Command Line Interface
+# STITCH
+Simple
+Text
+Interface
+    for
+Twitch
+CHat
 
 ## Description
-tccli is a simple Python script that will connect to any Twitch channel, the idea behind it was to have an alternative to the in-browser chat. I admit it's a solution to the problem not many people have, but at the end of the day the more options the better.
+Stitch is a simple Python script that will connect to any Twitch channel, the idea behind it was to have an alternative to the in-browser chat. I admit it's a solution to the problem not many people have, but at the end of the day the more options the better.
 
 ## Installation
 #### Requirements
 ``python3`` python interpreter<br>
-``certifi`` python module<br>
+``certifi`` python SSL module<br>
 
 #### On Windows
 - Clone the repo or download and unpack the zip<br>
@@ -24,28 +29,28 @@ tccli is a simple Python script that will connect to any Twitch channel, the ide
 ``sudo pacman -Syu python3 pip3``<br>
 - Run``sudo pip3 install certifi``<br>
 - Done, remember to add -x flag to the script:<br>
-``sudo chmod +x tccli.py``<br>
+``sudo chmod +x stitch.py``<br>
 
 ## Usage
 Now you can launch the script, it's supposed to be run from the command line (duh).<br>
 Run it with ``-h`` for the following help message:<br>
 
 ```
-tccli.py needs username, name of the channel and oauth token of that user
+stitch.py needs username, name of the channel and oauth token of that user
 You can mix and match what's in the configuration file and what's
 passed as the argument to the program, arguments will override data
 from the configuration file.
 
 usage:
-    python3 tccli.py [option 1] <arg 1> [option 2] <arg 2>...
-    ./tccli.py [option 1] <arg 1> [option 2] <arg 2>...
+    python3 stitch.py [option 1] <arg 1> [option 2] <arg 2>...
+    ./stitch.py [option 1] <arg 1> [option 2] <arg 2>...
 
     If "--config <file>" is not provided the script will look for configuration
     file in this order in following locations:
 
     UNIX:                       WINDOWS:
-    1) ~/.config/tccli/config   1) ./config.ini ("." meaning the folder containing tccli.py)
-    2) ~/.tcclirc
+    1) ~/.config/stitch/config   1) ./config.ini ("." meaning the folder containing stitch.py)
+    2) ~/.stitchrc
 
     Those will also be overridden by arguments passed while launching the script
     To quit chat simply type in !exit or !quit
@@ -59,10 +64,10 @@ options:
     --timestamps     use [h:m:s] timestamps
 
 examples:
-    python3 tccli.py -n 'my_bot_account' -c 'my_epic_channel' -o 'oauth:abcdefghijkl...'
-    python3 tccli.py --config './conf.cfg'
-    python3 tccli.py --config './conf.cfg' -c 'my_epic_channel'
-    python3 tccli.py --config './conf.cfg' --spectate
+    python3 stitch.py -n 'my_bot_account' -c 'my_epic_channel' -o 'oauth:abcdefghijkl...'
+    python3 stitch.py --config './conf.cfg'
+    python3 stitch.py --config './conf.cfg' -c 'my_epic_channel'
+    python3 stitch.py --config './conf.cfg' --spectate
 
 configuration file format:
     name=name_of_user
